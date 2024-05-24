@@ -77,6 +77,12 @@
             50% { background-color: #ffff99; }
             100% { background-color: #fff; }
         }
+
+        /* Styles for scrollable log container */
+        #checkInLogContainer {
+            max-height: 300px; /* Adjust the height as needed */
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -87,9 +93,40 @@
         <button type="submit">Check In</button>
     </form>
     <h2>Check-in Log</h2>
-    <ul id="checkInLog"></ul>
+    <!-- Scrollable log container -->
+    <div id="checkInLogContainer">
+        <ul id="checkInLog"></ul>
+    </div>
 
     <script>
+        function formatTime(time) {
+            const date = new Date(time);
+            return date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+        }
+
+        function refreshCheckInLog() {
+            fetch('/check_ins')
+                .then(response => response.json())
+                .then(data => {
+                    const checkInLog = document.getElementById('checkInLog');
+                    checkInLog.innerHTML = ''; // Clear the existing log
+
+                     data.sort((a, b) => new Date(b[2]) - new Date(a[2])); // Sort by check-in time (earliest first)
+
+                    data.forEach(row => {
+                        const logItem = document.createElement('li');
+                        logItem.textContent = `${row[1]} checked in at ${formatTime(row[2])}`; // Format time
+                        checkInLog.appendChild(logItem);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        refreshCheckInLog(); // Initial call to refresh check-in log
+
+        // Refresh the check-in log every 5 seconds
+        setInterval(refreshCheckInLog, 1000);
+
         document.getElementById('checkInForm').addEventListener('submit', function(event) {
             event.preventDefault();
             let id = document.getElementById('id').value.slice(0, 9); // Only take the first 9 digits
@@ -112,26 +149,6 @@
             });
             document.getElementById('id').value = ''; // Clear input box
         });
-
-        function refreshCheckInLog() {
-            fetch('/check_ins')
-                .then(response => response.json())
-                .then(data => {
-                    const checkInLog = document.getElementById('checkInLog');
-                    checkInLog.innerHTML = ''; // Clear the existing log
-
-                    data.forEach(row => {
-                        const logItem = document.createElement('li');
-                        logItem.textContent = `${row[1]} checked in at ${row[2]}`;
-                        checkInLog.appendChild(logItem);
-                    });
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        // Refresh the check-in log every 1 second
-        setInterval(refreshCheckInLog, 1000);
     </script>
 </body>
 </html>
-

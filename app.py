@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import threading
 import time
+import userdata
 
 app = Flask(__name__)
 
@@ -27,9 +28,7 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
-user_dict = {
-    "705131444": "Aanish Farrukh"
-}
+user_dict = userdata.user_data
 
 def get_name_by_id(id, user_dict):
     id_first_9 = id[:9]
@@ -44,7 +43,7 @@ def flash_background():
 
 @app.route('/')
 def index():
-    return render_template('index.html', flash=app.config.get('FLASH', False))
+    return render_template('index2.html', flash=app.config.get('FLASH', False))
 
 @app.route('/check_ins', methods=['GET'])
 def get_check_ins():
