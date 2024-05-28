@@ -4,6 +4,7 @@ import sqlite3
 import threading
 import time
 import userdata
+import webhook
 
 app = Flask(__name__)
 
@@ -75,11 +76,15 @@ def check_in():
         db.commit()
         app.config['FLASH'] = True
         threading.Thread(target=flash_background).start()
+
+        # Send a message to Microsoft Teams
+        webhook.send_teams_message(name, check_in_time)
+
         return jsonify({'message': f'Checked in successfully. Welcome, {name}!'}), 200
     except sqlite3.IntegrityError as e:
         print("Error:", e)  # Print the error message
         return jsonify({'error': 'Failed to check in'}), 400
 
 if __name__ == '__main__':
-    init_db()  # Initialize the database
+    init_db()
     app.run(debug=True)
